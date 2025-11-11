@@ -1,0 +1,6 @@
+{
+    "use_proxy": false,
+    "proxy_host": "",
+    "proxy_port": 8080,
+    "proxy_protocol": "HTTP"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "echo_text",
+  "description": "打印文本",
+  "platforms": {
+    "windows": { "executor": "cmd", "command": "echo {text}" },
+    "linux":   { "executor": "bash", "command": "echo {text}" },
+    "mac":     { "executor": "bash", "command": "echo {text}" }
+  },
+  "params": { "text": "要打印的文本" }
+}

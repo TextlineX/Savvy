@@ -1,0 +1,11 @@
+{
+    "version": "1.0",
+    "modules": [
+        "basic",
+        "theme",
+        "api",
+        "security",
+        "network"
+    ],
+    "active_module": "basic"
+}

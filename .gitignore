@@ -31,3 +31,8 @@ pytest_cache/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# PySide6相关
+*.qmlc
+*.jsc
+*.rcc

@@ -6,11 +6,13 @@ API管理器 - 封装DeepSeek API调用功能
 
 import os
 import time
+import sys
 from typing import List, Dict, Optional, Any
 from openai import OpenAI
 import subprocess
-import threading
-import time
+
+# 添加项目根目录到Python路径
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
 class DeepSeekAPIManager:
@@ -27,6 +29,8 @@ class DeepSeekAPIManager:
             base_url: DeepSeek API基础URL
         """
         self.api_key = api_key or os.environ.get('DEEPSEEK_API_KEY')
+        if not self.api_key:
+            raise ValueError("DeepSeek API密钥未提供，请在设置中配置API密钥或设置环境变量DEEPSEEK_API_KEY")
         self.base_url = base_url
         self.client = None
         self._initialize_client()
@@ -148,7 +152,7 @@ class DeepSeekAPIManager:
         
         return messages
     
-    def execute_powershell_command_realtime(self, command: str, timeout: int = 300) -> Dict[str, Any]:
+    def execute_powershell_command_realtime(self, command: str, timeout: int = 300):
         """
         实时执行PowerShell命令并显示输出
         
@@ -156,7 +160,7 @@ class DeepSeekAPIManager:
             command: PowerShell命令
             timeout: 超时时间（秒），默认5分钟
             
-        Returns:
+        Yields:
             执行结果字典
         """
         try:
@@ -181,33 +185,41 @@ class DeepSeekAPIManager:
                 # 检查是否超时
                 if time.time() - start_time > timeout:
                     process.kill()
-                    return {
+                    yield {
+                        "type": "error",
                         "success": False,
                         "error": f"命令执行超时（{timeout}秒）",
-                        "output": "\n".join(output_lines),
                         "is_timeout": True
                     }
+                    return
                 
                 # 读取标准输出
                 stdout_line = process.stdout.readline()
                 if stdout_line:
                     output_lines.append(stdout_line.strip())
-                    yield {"type": "stdout", "line": stdout_line.strip(), "is_running": True}
+                    yield {"type": "stdout", "line": stdout_line.strip()}
                 
                 # 读取标准错误
                 stderr_line = process.stderr.readline()
                 if stderr_line:
                     error_lines.append(stderr_line.strip())
-                    yield {"type": "stderr", "line": stderr_line.strip(), "is_running": True}
+                    yield {"type": "stderr", "line": stderr_line.strip()}
                 
                 time.sleep(0.1)  # 避免CPU占用过高
             
             # 读取剩余输出
             remaining_stdout, remaining_stderr = process.communicate()
             if remaining_stdout:
-                output_lines.extend(remaining_stdout.strip().split('\n'))
+                for line in remaining_stdout.strip().split('\n'):
+                    if line:
+                        output_lines.append(line)
+                        yield {"type": "stdout", "line": line}
+                        
             if remaining_stderr:
-                error_lines.extend(remaining_stderr.strip().split('\n'))
+                for line in remaining_stderr.strip().split('\n'):
+                    if line:
+                        error_lines.append(line)
+                        yield {"type": "stderr", "line": line}
             
             # 返回最终结果
             yield {
@@ -215,16 +227,14 @@ class DeepSeekAPIManager:
                 "success": process.returncode == 0,
                 "returncode": process.returncode,
                 "output": "\n".join(output_lines),
-                "error": "\n".join(error_lines),
-                "is_running": False
+                "error": "\n".join(error_lines)
             }
 
         except Exception as e:
             yield {
                 "type": "error",
                 "success": False,
-                "error": f"执行命令时发生错误: {str(e)}",
-                "is_running": False
+                "error": f"执行命令时发生错误: {str(e)}"
             }
 
 
@@ -232,7 +242,7 @@ class DeepSeekAPIManager:
 if __name__ == "__main__":
     # 测试API调用
     try:
-        api_manager = DeepSeekAPIManager(api_key="sk-1eb5c511d3a74b648ca30059781fff31")
+        api_manager = DeepSeekAPIManager()
         
         # 测试基本调用
         messages = api_manager.format_messages(

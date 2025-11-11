@@ -1,0 +1,6 @@
+{
+    "encrypt_data": false,
+    "encrypt_cache": false,
+    "password_protect": false,
+    "lock_timeout": 5
+}

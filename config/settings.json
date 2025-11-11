@@ -1,0 +1,28 @@
+{
+    "api": {
+        "api_key": "",
+        "api_url": "",
+        "timeout": 30
+    },
+    "basic": {
+        "auto_start": false,
+        "minimize_to_tray": false,
+        "language": "简体中文"
+    },
+    "theme": {
+        "theme_mode": "浅色主题",
+        "font_size": 14
+    },
+    "security": {
+        "encrypt_data": false,
+        "encrypt_cache": false,
+        "password_protect": false,
+        "lock_timeout": 5
+    },
+    "network": {
+        "use_proxy": false,
+        "proxy_host": "",
+        "proxy_port": 8080,
+        "proxy_protocol": "HTTP"
+    }
+}
